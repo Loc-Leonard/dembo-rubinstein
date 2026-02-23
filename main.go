@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -10,7 +11,40 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	_ "github.com/lib/pq"
 )
+
+var db *sql.DB
+
+func initDB() error {
+	connStr := "postgres://user:pass@postgres:5432/surveydb?sslmode=disable" // ? не &
+
+	var err error
+	db, err = sql.Open("postgres", connStr)
+	if err != nil {
+		return err // ❌ Только если ошибка подключения
+	}
+
+	// ✅ Проверяем подключение
+	if err = db.Ping(); err != nil {
+		return err
+	}
+
+	// ✅ Создаём таблицу
+	_, err = db.Exec(`
+        CREATE TABLE IF NOT EXISTS responses (
+            id VARCHAR(8) PRIMARY KEY,
+            raw_data JSONB NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )`)
+	if err != nil {
+		return err
+	}
+
+	log.Println("✅ БД готова (таблица responses создана)")
+	return nil // ✅ Успех
+}
 
 // SurveyResponse структура для ответов респондента
 type SurveyResponse struct {
@@ -67,6 +101,11 @@ func main() {
 	// Инициализация генератора случайных чисел
 	rand.Seed(time.Now().UnixNano())
 
+	if err := initDB(); err != nil {
+		log.Fatal("PostgreSQL:", err)
+	}
+	defer db.Close()
+
 	// Статические файлы
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
@@ -107,50 +146,50 @@ func handleSave(w http.ResponseWriter, r *http.Request) {
 	// Генерация ID
 	id := generateID()
 
-	// Сохранение
-	store.mu.Lock()
-	store.records[id] = response
-	store.mu.Unlock()
-
-	// Возвращаем ID
+	rawJson, _ := json.Marshal(response)
+	_, err := db.Exec("INSERT INTO responses (id, raw_data) VALUES ($1, $2)", id, rawJson)
+	if err != nil {
+		http.Error(w, "Ошибка БД", http.StatusInternalServerError)
+		return
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]string{
-		"id":         id,
-		"resultsUrl": fmt.Sprintf("/result?v=%s", id),
+		"id":        id,
+		"share_url": fmt.Sprintf("/result?v=%s", id),
 	})
 }
 
 // handleResult обработчик для страницы результатов
 func handleResult(w http.ResponseWriter, r *http.Request) {
-	// Вариант А: данные в hash (обрабатывается на клиенте)
-	if r.URL.Query().Get("d") != "" {
-		http.ServeFile(w, r, "static/result.html")
-		return
-	}
-
-	// Вариант Б: данные по ID
+	// Получаем ID из ссылки (?v=abc123)
 	id := r.URL.Query().Get("v")
 	if id == "" {
-		http.Error(w, "Не указан ID результата", http.StatusBadRequest)
+		http.Error(w, "ID не указан", http.StatusBadRequest)
 		return
 	}
 
-	store.mu.RLock()
-	response, exists := store.records[id]
-	store.mu.RUnlock()
-
-	if !exists {
+	// ✅ Читаем СЫРЫЕ данные из PostgreSQL
+	var rawJSON []byte
+	err := db.QueryRow("SELECT raw_data FROM responses WHERE id=$1", id).Scan(&rawJSON)
+	if err != nil {
 		http.Error(w, "Результат не найден", http.StatusNotFound)
 		return
 	}
 
-	// Расчет показателей
+	// ✅ Парсим сырые данные
+	var response SurveyResponse
+	if err := json.Unmarshal(rawJSON, &response); err != nil {
+		http.Error(w, "Ошибка данных", http.StatusInternalServerError)
+		return
+	}
+
+	// ✅ ТВОЯ обработка Дембо-Рубинштейна (остаётся!)
 	results := calculateResults(response)
 
-	// Рендеринг шаблона
+	// ✅ Рендер шаблона (то же самое, что видел респондент)
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	if err := templates.ExecuteTemplate(w, "result.html", results); err != nil {
-		http.Error(w, "Ошибка рендеринга шаблона", http.StatusInternalServerError)
+		http.Error(w, "Ошибка шаблона", http.StatusInternalServerError)
 	}
 }
 
