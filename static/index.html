@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Методика Дембо-Рубинштейн</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Диагностика самооценки</h1>
+        <h2>Методика Дембо-Рубинштейн (модификация А.М. Прихожан)</h2>
+        
+        <div id="survey-form">
+            <p style="text-align: center; color: #666; margin-bottom: 20px;">
+                <span style="display: inline-block; width: 20px; height: 20px; background: #2196F3; border-radius: 50%; margin: 0 5px;"></span> - как вы оцениваете себя сейчас<br>
+                <span style="display: inline-block; width: 20px; height: 20px; background: #FF1493; border-radius: 50%; margin: 0 5px;"></span> - при каком уровне вы были бы довольны собой
+            </p>
+            
+            <div class="scales-container">
+                <!-- Шкалы будут добавлены JavaScript -->
+            </div>
+            
+            <div class="actions">
+                <button id="submit-btn" class="btn" disabled>Показать результаты</button>
+                <div id="validation-message" class="error-message"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/survey.js"></script>
+</body>
+</html>
