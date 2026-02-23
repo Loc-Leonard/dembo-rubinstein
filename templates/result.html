@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Результаты диагностики</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Результаты самооценки по методике Дембо-Рубинштейн</h1>
+        
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Шкала</th>
+                    <th>Сейчас</th>
+                    <th>Уровень самооценки</th>
+                    <th>Буду доволен</th>
+                    <th>Уровень притязаний</th>
+                    <th>Разница</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{range $key, $level := .Levels}}
+                <tr>
+                    <td><strong>{{$level.Scale}}</strong></td>
+                    <td>{{$level.Now}}</td>
+                    <td>{{$level.NowLevel}}</td>
+                    <td>{{$level.Ideal}}</td>
+                    <td>{{$level.IdealLevel}}</td>
+                    <td class="{{if ge $level.Diff 0}}diff-positive{{else}}diff-negative{{end}}">
+                        {{if ge $level.Diff 0}}+{{end}}{{$level.Diff}}
+                    </td>
+                </tr>
+                {{end}}
+            </tbody>
+            <tfoot class="averages">
+                <tr>
+                    <td><strong>Средние значения</strong></td>
+                    <td>{{printf "%.1f" .AvgSelf}}</td>
+                    <td colspan="2">{{printf "%.1f" .AvgLevel}}</td>
+                    <td></td>
+                    <td>{{printf "%.1f" .AvgDiff}}</td>
+                </tr>
+            </tfoot>
+        </table>
+
+        <div class="interpretation">
+            <h3>Интерпретация результатов:</h3>
+            <p><strong>Самооценка:</strong> Средний балл {{printf "%.1f" .AvgSelf}}</p>
+            <p><strong>Уровень притязаний:</strong> Средний балл {{printf "%.1f" .AvgLevel}}</p>
+            <p><strong>Средняя разница:</strong> {{printf "%.1f" .AvgDiff}}</p>
+        </div>
+
+        <div class="actions">
+            <a href="/" class="btn">Пройти заново</a>
+        </div>
+    </div>
+</body>
+</html>
