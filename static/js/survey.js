@@ -111,19 +111,33 @@ class DemboRubinsteinSurvey {
         }
     }
 
-        showResults() {
-        const data = {};
-        this.scales.forEach(scale => {
-            const nowSlider   = document.getElementById(`${scale.id}-now`);
-            const idealSlider = document.getElementById(`${scale.id}-ideal`);
-            
-            data[`${scale.id}_now`]   = nowSlider   ? parseInt(nowSlider.value)   : 0;
-            data[`${scale.id}_ideal`] = idealSlider ? parseInt(idealSlider.value) : 0;
-        });
+showResults() {
+    const data = {};
+    this.scales.forEach(scale => {
+        const nowSlider   = document.getElementById(`${scale.id}-now`);
+        const idealSlider = document.getElementById(`${scale.id}-ideal`);
+        
+        data[`${scale.id}_now`]   = nowSlider   ? parseInt(nowSlider.value)   : 0;
+        data[`${scale.id}_ideal`] = idealSlider ? parseInt(idealSlider.value) : 0;
+    });
 
-        const results = this.calculateResults(data);
-        this.renderResults(results);
-    }
+    fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Ошибка сервера');
+        return response.json();
+    })
+    .then(data => {
+        this.renderShareLink(data.share_url);
+    })
+    .catch(error => {
+        alert('❌ Ошибка сохранения: ' + error);
+        console.error('Save error:', error);
+    });
+}
 
     calculateResults(data) {
         const scales = [
@@ -324,6 +338,36 @@ class DemboRubinsteinSurvey {
             });
         };
     }
+    renderShareLink(shareUrl) {
+    const form = document.getElementById('survey-form');
+    if (form) form.style.display = 'none';
+
+    const container = document.querySelector('.container');
+    const shareDiv = document.createElement('div');
+    shareDiv.className = 'share-results';
+    shareDiv.innerHTML = `
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; text-align: center;">
+            <h2>✅ Результаты сохранены!</h2>
+            <p>Скопируйте ссылку и отправьте проверяющему:</p>
+            <div style="margin: 20px 0;">
+                <input id="share-link" value="${window.location.origin}${shareUrl}" 
+                       readonly style="width: 70%; padding: 10px; font-size: 14px;">
+                <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('share-link').value)" 
+                        style="width: 25%; padding: 10px; margin-left: 5px;">
+                    📋 Копировать
+                </button>
+            </div>
+            <p style="font-size: 12px; color: #666;">
+                Проверяющий увидит те же результаты, что и вы
+            </p>
+            <button class="btn" onclick="location.reload()" style="background: #6c757d;">
+                Пройти заново
+            </button>
+        </div>
+    `;
+    container.appendChild(shareDiv);
+}
+
 }
 
 document.addEventListener('DOMContentLoaded', () => {
