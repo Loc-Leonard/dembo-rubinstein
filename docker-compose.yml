@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      # Для разработки монтируем код (чтобы не пересобирать образ при изменениях)
+      - ./static:/app/static
+      - ./templates:/app/templates
+      - ./data:/app/data
+    environment:
+      - APP_ENV=development
+      - PORT=8080
