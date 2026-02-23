@@ -1,0 +1,7 @@
+# Исключаем из образа
+data/
+.git
+.gitignore
+README.md
+.dockerignore
+docker-compose.yml
