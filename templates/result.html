@@ -39,7 +39,8 @@
                 <tr>
                     <td><strong>Средние значения</strong></td>
                     <td>{{printf "%.1f" .AvgSelf}}</td>
-                    <td colspan="2">{{printf "%.1f" .AvgLevel}}</td>
+                    <td></td>
+                    <td>{{printf "%.1f" .AvgLevel}}</td>
                     <td></td>
                     <td>{{printf "%.1f" .AvgDiff}}</td>
                 </tr>
@@ -55,7 +56,24 @@
 
         <div class="actions">
             <a href="/" class="btn">Пройти заново</a>
+            <button class="btn" style="background: #2196F3;" onclick="copyShareLink()">
+                📋 Поделиться результатом тестирования
+            </button>
         </div>
     </div>
+
+    <script>
+    function copyShareLink() {
+        const url = window.location.href;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                alert('Ссылка на результаты скопирована в буфер обмена');
+            })
+            .catch(err => {
+                console.error('Clipboard error:', err);
+                alert('Не удалось скопировать ссылку');
+            });
+    }
+    </script>
 </body>
 </html>
