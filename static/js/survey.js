@@ -127,14 +127,18 @@ showResults() {
         body: JSON.stringify(data)
     })
     .then(response => {
-        if (!response.ok) throw new Error('Ошибка сервера');
+        if (!response.ok) {
+            throw new Error('Ошибка сервера');
+        }
         return response.json();
     })
     .then(data => {
-        this.renderShareLink(data.share_url);
+        const fullUrl = `${window.location.origin}${data.share_url}`;
+        // ✅ Сразу показываем страницу результатов в этой же вкладке
+        window.location.href = fullUrl;
     })
     .catch(error => {
-        alert('❌ Ошибка сохранения: ' + error);
+        alert('❌ Ошибка сохранения: ' + error.message);
         console.error('Save error:', error);
     });
 }
