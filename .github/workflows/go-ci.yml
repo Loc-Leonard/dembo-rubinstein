@@ -22,4 +22,4 @@ jobs:
         run: go test ./...
 
       - name: build Docker image
-        run: docker build -t dembo-app: test .
+        run: docker build -t dembo-app:test .
