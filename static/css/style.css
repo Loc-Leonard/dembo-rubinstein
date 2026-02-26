@@ -78,6 +78,7 @@ h2 {
 
 /* Слайдеры с динамическим градиентом */
 .slider {
+    appearance: none;
     -webkit-appearance: none;
     width: 200px; /* длина для transform */
     height: 8px;
