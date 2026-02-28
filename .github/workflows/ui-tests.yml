@@ -1,0 +1,31 @@
+name: UI tests
+on:
+  push:
+    branches: [develop]
+  pull_request:
+
+jobs:
+  cypress-e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build and start app stack
+        run: |
+          docker compose up -d --build app postgres
+      
+      - name: Run Cypress tests
+        run: |
+          docker compose run --rm cypress
+
+      - name: Show logs on failure
+        if: failure()
+        run: |
+          docker compose logs app postgres cypress
+
+      - name: Shutdown
+        if: always()
+        run: |
+          docker compose down
