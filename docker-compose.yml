@@ -36,5 +36,17 @@ services:
     depends_on:
       - postgres
 
+  cypress:
+    image: cypress/included:13.6.0
+    depends_on:
+      - app
+    working_dir: /e2e
+    environment:
+      - CYPRESS_baseUrl=http://app:8080
+    volumes:
+      - ./cypress:/e2e/cypress
+      - ./cypress.config.js:/e2e/cypress.config.js
+    command: ["cypress", run]
+
 volumes:
   pgdata:
