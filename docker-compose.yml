@@ -1,52 +1,54 @@
-version: '3.8'
+version: '3.8'  # ок, игнор warning
 services:
   app:
     build: .
-    ports:
-      - "8080:8080"
     depends_on:
       postgres:
         condition: service_healthy
-    environment:
-      - DB_HOST=postgres
-      - DB_USER=user
-      - DB_PASS=pass
-      - DB_NAME=surveydb
+    env_file: 
+      - .env  # ← из .env!
+    networks: [backend-net]
+    restart: unless-stopped
 
   postgres:
     image: postgres:16
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: surveydb
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+    env_file:
+      - .env  # ← из .env!
+    volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U user"]
       interval: 10s
       retries: 5
+    networks: [backend-net]
+    restart: unless-stopped
 
-  pgadmin:  # ✅ GUI в браузере
+  pgadmin:
     image: dpage/pgadmin4:latest
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "5050:80"
-    depends_on:
-      - postgres
+    env_file:
+      - .env
+    volumes: [pgadmin-data:/var/lib/pgadmin]
+    depends_on: [postgres]
+    networks: [backend-net]
+    restart: unless-stopped
 
-  cypress:
-    image: cypress/included:13.6.0
-    depends_on:
-      - app
-    working_dir: /e2e
-    environment:
-      - CYPRESS_baseUrl=http://app:8080
+  npm:
+    image: jc21/nginx-proxy-manager:latest
+    ports:
+      - '8081:80'
+      - '8443:443'
+      - '81:81'
     volumes:
-      - ./cypress:/e2e/cypress
-      - ./cypress.config.js:/e2e/cypress.config.js
-    command: ["cypress", run]
+      - npm-data:/data
+      - npm-lets:/etc/letsencrypt
+    networks: [backend-net]
+    restart: unless-stopped
+
+networks:
+  backend-net:
+    driver: bridge
 
 volumes:
   pgdata:
+  pgadmin-data:
+  npm-data:
+  npm-lets:
