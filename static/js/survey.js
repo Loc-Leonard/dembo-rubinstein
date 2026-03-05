@@ -18,6 +18,7 @@ class DemboRubinsteinSurvey {
         this.renderScales();
         this.attachEventListeners();
         this.resetResponses();
+        this.enhanceMobileExperience(); // Добавляем мобильные улучшения в класс
     }
 
     resetResponses() {
@@ -45,11 +46,11 @@ class DemboRubinsteinSurvey {
                     </small>
                 </div>
                 <div class="vertical-scale">
-                    <div class="slider-wrapper">
+                    <div class="slider-wrapper" data-label="Сейчас">
                         <input type="range" min="0" max="100" value="0" class="slider now-slider"
                                data-scale="${scale.id}" data-type="now" id="${scale.id}-now">
                     </div>
-                    <div class="slider-wrapper">
+                    <div class="slider-wrapper" data-label="Идеал">
                         <input type="range" min="0" max="100" value="0" class="slider ideal-slider"
                                data-scale="${scale.id}" data-type="ideal" id="${scale.id}-ideal">
                     </div>
@@ -66,7 +67,7 @@ class DemboRubinsteinSurvey {
     }
 
     attachGradient(slider) {
-        const color = slider.classList.contains('now-slider') ? '#2196F3' : '#FF1493'; //ЦВЕТА СЛАЙДЕРОВ ТУТ МЕНЯТЬ
+        const color = slider.classList.contains('now-slider') ? '#2196F3' : '#FF1493';
         const updateGradient = () => {
             slider.style.background = `linear-gradient(to right, ${color} ${slider.value}%, #ccc ${slider.value}%)`;
         };
@@ -82,6 +83,43 @@ class DemboRubinsteinSurvey {
 
         const submitBtn = document.getElementById('submit-btn');
         if (submitBtn) submitBtn.addEventListener('click', () => this.showResults());
+    }
+
+    enhanceMobileExperience() {
+        // Проверяем, что это мобильное устройство
+        if ('ontouchstart' in window) {
+            const sliders = document.querySelectorAll('.slider');
+            
+            sliders.forEach(slider => {
+                // Предотвращаем прокрутку при касании слайдера
+                slider.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                }, { passive: false });
+                
+                slider.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const rect = slider.getBoundingClientRect();
+                    
+                    // Для мобильных устройств с горизонтальными слайдерами
+                    if (window.innerWidth <= 768) {
+                        const percent = (touch.clientX - rect.left) / rect.width;
+                        const value = Math.min(100, Math.max(0, Math.round(percent * 100)));
+                        slider.value = value;
+                        
+                        const event = new Event('input', { bubbles: true });
+                        slider.dispatchEvent(event);
+                    }
+                }, { passive: false });
+            });
+
+            // Увеличиваем область касания для кнопок
+            const buttons = document.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.style.padding = '15px 30px';
+                btn.style.minHeight = '50px'; // Минимальная высота для удобного касания
+            });
+        }
     }
 
     handleSliderChange(event) {
@@ -111,47 +149,46 @@ class DemboRubinsteinSurvey {
         }
     }
 
-showResults() {
-    const data = {};
-    this.scales.forEach(scale => {
-        const nowSlider   = document.getElementById(`${scale.id}-now`);
-        const idealSlider = document.getElementById(`${scale.id}-ideal`);
-        
-        data[`${scale.id}_now`]   = nowSlider   ? parseInt(nowSlider.value)   : 0;
-        data[`${scale.id}_ideal`] = idealSlider ? parseInt(idealSlider.value) : 0;
-    });
+    showResults() {
+        const data = {};
+        this.scales.forEach(scale => {
+            const nowSlider = document.getElementById(`${scale.id}-now`);
+            const idealSlider = document.getElementById(`${scale.id}-ideal`);
+            
+            data[`${scale.id}_now`] = nowSlider ? parseInt(nowSlider.value) : 0;
+            data[`${scale.id}_ideal`] = idealSlider ? parseInt(idealSlider.value) : 0;
+        });
 
-    fetch('/api/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Ошибка сервера');
-        }
-        return response.json();
-    })
-    .then(data => {
-        const fullUrl = `${window.location.origin}${data.share_url}`;
-        // ✅ Сразу показываем страницу результатов в этой же вкладке
-        window.location.href = fullUrl;
-    })
-    .catch(error => {
-        alert('❌ Ошибка сохранения: ' + error.message);
-        console.error('Save error:', error);
-    });
-}
+        fetch('/api/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Ошибка сервера');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const fullUrl = `${window.location.origin}${data.share_url}`;
+            window.location.href = fullUrl;
+        })
+        .catch(error => {
+            alert('❌ Ошибка сохранения: ' + error.message);
+            console.error('Save error:', error);
+        });
+    }
 
     calculateResults(data) {
         const scales = [
-            { name: 'Здоровье',                now: data.health_now,      ideal: data.health_ideal },
-            { name: 'Ум, способности',         now: data.mind_now,        ideal: data.mind_ideal },
-            { name: 'Характер',                now: data.character_now,   ideal: data.character_ideal },
-            { name: 'Авторитет у сверстников', now: data.authority_now,   ideal: data.authority_ideal },
-            { name: 'Умелые руки',             now: data.hands_now,       ideal: data.hands_ideal },
-            { name: 'Внешность',               now: data.appearance_now,  ideal: data.appearance_ideal },
-            { name: 'Уверенность в себе',      now: data.confidence_now,  ideal: data.confidence_ideal }
+            { name: 'Здоровье', now: data.health_now, ideal: data.health_ideal },
+            { name: 'Ум, способности', now: data.mind_now, ideal: data.mind_ideal },
+            { name: 'Характер', now: data.character_now, ideal: data.character_ideal },
+            { name: 'Авторитет у сверстников', now: data.authority_now, ideal: data.authority_ideal },
+            { name: 'Умелые руки', now: data.hands_now, ideal: data.hands_ideal },
+            { name: 'Внешность', now: data.appearance_now, ideal: data.appearance_ideal },
+            { name: 'Уверенность в себе', now: data.confidence_now, ideal: data.confidence_ideal }
         ];
 
         const results = [];
@@ -162,27 +199,27 @@ showResults() {
             const diff = scale.ideal - scale.now;
             
             if (index > 0) {
-                sumNow   += scale.now;
+                sumNow += scale.now;
                 sumIdeal += scale.ideal;
-                sumDiff  += diff;
+                sumDiff += diff;
                 validScalesCount++;
             }
 
             results.push({
                 name: scale.name,
-                now:  scale.now,
+                now: scale.now,
                 ideal: scale.ideal,
                 diff: diff,
-                nowLevel:   this.getSelfEsteemLevel(scale.now),
+                nowLevel: this.getSelfEsteemLevel(scale.now),
                 idealLevel: this.getAspirationLevel(scale.ideal),
                 isTraining: index === 0
             });
         });
 
         const averages = {
-            now:   validScalesCount > 0 ? Math.round(sumNow   / validScalesCount) : 0,
+            now: validScalesCount > 0 ? Math.round(sumNow / validScalesCount) : 0,
             ideal: validScalesCount > 0 ? Math.round(sumIdeal / validScalesCount) : 0,
-            diff:  validScalesCount > 0 ? Math.round(sumDiff  / validScalesCount) : 0
+            diff: validScalesCount > 0 ? Math.round(sumDiff / validScalesCount) : 0
         };
 
         return {
@@ -193,13 +230,13 @@ showResults() {
     }
 
     getSelfEsteemLevel(value) {
-        if (value < 45)  return 'Заниженная (группа риска)';
+        if (value < 45) return 'Заниженная (группа риска)';
         if (value <= 74) return 'Адекватная (средняя и высокая)';
         return 'Завышенная';
     }
 
     getAspirationLevel(value) {
-        if (value < 60)  return 'Заниженный';
+        if (value < 60) return 'Заниженный';
         if (value <= 89) return 'Оптимальный (60-89)';
         return 'Нереалистичный (90-100)';
     }
@@ -342,38 +379,39 @@ showResults() {
             });
         };
     }
-    renderShareLink(shareUrl) {
-    const form = document.getElementById('survey-form');
-    if (form) form.style.display = 'none';
 
-    const container = document.querySelector('.container');
-    const shareDiv = document.createElement('div');
-    shareDiv.className = 'share-results';
-    shareDiv.innerHTML = `
-        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; text-align: center;">
-            <h2>✅ Результаты сохранены!</h2>
-            <p>Скопируйте ссылку и отправьте проверяющему:</p>
-            <div style="margin: 20px 0;">
-                <input id="share-link" value="${window.location.origin}${shareUrl}" 
-                       readonly style="width: 70%; padding: 10px; font-size: 14px;">
-                <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('share-link').value)" 
-                        style="width: 25%; padding: 10px; margin-left: 5px;">
-                    📋 Копировать
+    renderShareLink(shareUrl) {
+        const form = document.getElementById('survey-form');
+        if (form) form.style.display = 'none';
+
+        const container = document.querySelector('.container');
+        const shareDiv = document.createElement('div');
+        shareDiv.className = 'share-results';
+        shareDiv.innerHTML = `
+            <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; text-align: center;">
+                <h2>✅ Результаты сохранены!</h2>
+                <p>Скопируйте ссылку и отправьте проверяющему:</p>
+                <div style="margin: 20px 0;">
+                    <input id="share-link" value="${window.location.origin}${shareUrl}" 
+                           readonly style="width: 70%; padding: 10px; font-size: 14px;">
+                    <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('share-link').value)" 
+                            style="width: 25%; padding: 10px; margin-left: 5px;">
+                        📋 Копировать
+                    </button>
+                </div>
+                <p style="font-size: 12px; color: #666;">
+                    Проверяющий увидит те же результаты, что и вы
+                </p>
+                <button class="btn" onclick="location.reload()" style="background: #6c757d;">
+                    Пройти заново
                 </button>
             </div>
-            <p style="font-size: 12px; color: #666;">
-                Проверяющий увидит те же результаты, что и вы
-            </p>
-            <button class="btn" onclick="location.reload()" style="background: #6c757d;">
-                Пройти заново
-            </button>
-        </div>
-    `;
-    container.appendChild(shareDiv);
+        `;
+        container.appendChild(shareDiv);
+    }
 }
 
-}
-
+// Единая инициализация
 document.addEventListener('DOMContentLoaded', () => {
     new DemboRubinsteinSurvey();
 });
