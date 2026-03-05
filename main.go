@@ -8,6 +8,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -18,7 +19,17 @@ import (
 var db *sql.DB
 
 func initDB() error {
-	connStr := "postgres://user:pass@postgres:5432/surveydb?sslmode=disable"
+	host := getenv("DB_HOST", "postgres")
+	user := getenv("DB_USER", "user")
+	pass := getenv("DB_PASS", "change_me_please")
+	name := getenv("DB_NAME", "surveydb")
+
+	connStr := fmt.Sprintf(
+		"postgres://%s:%s@%s:5432/%s?sslmode=disable",
+		user, pass, host, name,
+	)
+
+	log.Println("Connecting to DB with:", connStr) // можно убрать после дебага
 
 	var err error
 	db, err = sql.Open("postgres", connStr)
@@ -42,6 +53,13 @@ func initDB() error {
 
 	log.Println("✅ БД готова (таблица responses создана)")
 	return nil
+}
+
+func getenv(key, def string) string {
+	if v := os.Getenv(key); v != "" {
+		return v
+	}
+	return def
 }
 
 // SurveyResponse структура для ответов респондента (внутренний формат)
