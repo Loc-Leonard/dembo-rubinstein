@@ -74,7 +74,22 @@ h2 {
     align-items: center;
     width: 40px;
     height: 100%;
+    overflow: visible;
+    position: relative;
 }
+
+.slider-wrapper::before {
+    content: "";
+    position:absolute;
+    right: -1px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 6px;
+    height: 1px;
+    background: #999;
+    opacity: 0.7;
+    pointer-events: none;
+} 
 
 /* Слайдеры с динамическим градиентом */
 .slider {
@@ -83,7 +98,7 @@ h2 {
     width: 200px; /* длина для transform */
     height: 8px;
     border-radius: 4px;
-    transform: rotate(-90deg);
+    transform: rotate(-90deg) translateY(10px);
     transform-origin: 50% 50%;
     cursor: pointer;
     background: linear-gradient(to right, #2196F3 0%, #ccc 0%);
@@ -251,7 +266,7 @@ h2 {
     }
 
     .vertical-scale {
-        height: 180px;
+        height: 400px;
         width: 80px;
     }
 
