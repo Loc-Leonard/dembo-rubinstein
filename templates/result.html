@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
     <title>Результаты диагностики</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
@@ -10,55 +10,74 @@
     <div class="container">
         <h1 id="result-title">Результаты самооценки по методике Дембо-Рубинштейн</h1>
         
-        <table class="results-table">
-            <thead>
-                <tr>
-                    <th>Шкала</th>
-                    <th>Сейчас</th>
-                    <th>Уровень самооценки</th>
-                    <th>Буду доволен</th>
-                    <th>Уровень притязаний</th>
-                    <th>Разница</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{range $key, $level := .Levels}}
-                <tr>
-                    <td><strong>{{$level.Scale}}</strong></td>
-                    <td>{{$level.Now}}</td>
-                    <td>{{$level.NowLevel}}</td>
-                    <td>{{$level.Ideal}}</td>
-                    <td>{{$level.IdealLevel}}</td>
-                    <td class="{{if ge $level.Diff 0}}diff-positive{{else}}diff-negative{{end}}">
-                        {{if ge $level.Diff 0}}+{{end}}{{$level.Diff}}
-                    </td>
-                </tr>
-                {{end}}
-            </tbody>
-            <tfoot class="averages">
-                <tr>
-                    <td><strong>Средние значения</strong></td>
-                    <td>{{printf "%.1f" .AvgSelf}}</td>
-                    <td></td>
-                    <td>{{printf "%.1f" .AvgLevel}}</td>
-                    <td></td>
-                    <td>{{printf "%.1f" .AvgDiff}}</td>
-                </tr>
-            </tfoot>
-        </table>
-
-        <div class="interpretation">
-            <h3>Интерпретация результатов:</h3>
-            <p><strong>Самооценка:</strong> Средний балл {{printf "%.1f" .AvgSelf}}</p>
-            <p><strong>Уровень притязаний:</strong> Средний балл {{printf "%.1f" .AvgLevel}}</p>
-            <p><strong>Средняя разница:</strong> {{printf "%.1f" .AvgDiff}}</p>
+        <!-- Добавляем обертку для горизонтального скролла на мобильных -->
+        <div class="table-responsive">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Шкала</th>
+                        <th>Сейчас</th>
+                        <th>Уровень самооценки</th>
+                        <th>Буду доволен</th>
+                        <th>Уровень притязаний</th>
+                        <th>Разница</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range $key, $level := .Levels}}
+                    <tr>
+                        <td><strong>{{$level.Scale}}</strong></td>
+                        <td>{{$level.Now}}</td>
+                        <td>{{$level.NowLevel}}</td>
+                        <td>{{$level.Ideal}}</td>
+                        <td>{{$level.IdealLevel}}</td>
+                        <td class="{{if ge $level.Diff 0}}diff-positive{{else}}diff-negative{{end}}">
+                            {{if ge $level.Diff 0}}+{{end}}{{$level.Diff}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+                <tfoot class="averages">
+                    <tr>
+                        <td><strong>Средние значения</strong></td>
+                        <td><strong>{{printf "%.1f" .AvgSelf}}</strong></td>
+                        <td></td>
+                        <td><strong>{{printf "%.1f" .AvgLevel}}</strong></td>
+                        <td></td>
+                        <td><strong>{{printf "%.1f" .AvgDiff}}</strong></td>
+                    </tr>
+                </tfoot>
+            </table>
         </div>
 
+        <!-- Улучшаем блок интерпретации -->
+        <div class="interpretation-box">
+            <h3>📊 Интерпретация результатов</h3>
+            <div class="interpretation-item">
+                <p><strong>Самооценка:</strong> Средний балл {{printf "%.1f" .AvgSelf}}</p>
+                <p class="interpretation-desc">{{getSelfEsteemDescription .AvgSelf}}</p>
+            </div>
+            <div class="interpretation-item">
+                <p><strong>Уровень притязаний:</strong> Средний балл {{printf "%.1f" .AvgLevel}}</p>
+                <p class="interpretation-desc">{{getAspirationDescription .AvgLevel}}</p>
+            </div>
+            <div class="interpretation-item">
+                <p><strong>Средняя разница:</strong> {{printf "%.1f" .AvgDiff}}</p>
+                <p class="interpretation-desc">{{getDiffDescription .AvgDiff}}</p>
+            </div>
+        </div>
+
+        <!-- Улучшаем блок с кнопками -->
         <div class="actions">
-            <a href="/" class="btn">Пройти заново</a>
-            <button class="btn" style="background: #2196F3;" onclick="copyShareLink()">
-                📋 Поделиться результатом тестирования
+            <a href="/" class="btn">🔄 Пройти заново</a>
+            <button class="btn btn-share" onclick="copyShareLink()">
+                📋 Поделиться результатом
             </button>
+        </div>
+
+        <!-- Добавляем уведомление о копировании -->
+        <div id="copy-notification" class="copy-notification" style="display: none;">
+            Ссылка скопирована!
         </div>
     </div>
 
@@ -67,13 +86,27 @@
         const url = window.location.href;
         navigator.clipboard.writeText(url)
             .then(() => {
-                alert('Ссылка на результаты скопирована в буфер обмена');
+                // Показываем уведомление
+                const notification = document.getElementById('copy-notification');
+                notification.style.display = 'block';
+                notification.style.opacity = '1';
+                
+                // Скрываем через 2 секунды
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => {
+                        notification.style.display = 'none';
+                    }, 300);
+                }, 2000);
             })
             .catch(err => {
                 console.error('Clipboard error:', err);
-                alert('Не удалось скопировать ссылку');
+                alert('❌ Не удалось скопировать ссылку. Попробуйте еще раз.');
             });
     }
+
+    // Добавляем поддержку touch-событий для мобильных
+    document.addEventListener('touchstart', function() {}, {passive: true});
     </script>
 </body>
 </html>
