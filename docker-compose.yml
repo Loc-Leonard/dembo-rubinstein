@@ -50,5 +50,5 @@ networks:
 volumes:
   pgdata:
   pgadmin-data:
-  npm-data:
-  npm-lets:
+  #npm-data:
+  #npm-lets:
