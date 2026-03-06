@@ -437,20 +437,6 @@ h2 {
     }
 }
 
-/* Альбомная ориентация на мобильных */
-@media (max-width: 896px) and (orientation: landscape) {
-    .scales-container {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    
-    .vertical-scale {
-        height: 150px;
-    }
-    
-    .slider {
-        width: 180px;
-    }
-}
 
 /* Поддержка сенсорных экранов */
 @media (hover: none) and (pointer: coarse) {
@@ -459,8 +445,8 @@ h2 {
     }
     
     .slider::-webkit-slider-thumb {
-        width: 24px;
-        height: 24px;
+        width: 20px;
+        height: 20px;
     }
     
     .btn {
@@ -483,74 +469,138 @@ h2 {
     }
 }
 
-/* Дополнительные стили для мобильных горизонтальных слайдеров */
-@media (max-width: 768px) and (orientation: portrait) {
+@media (orientation: landscape) and (max-width: 1024px) {
+    /* Запрещаем прокрутку страницы при касании слайдеров */
+    .slider {
+        touch-action: none !important;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        user-select: none;
+    }
+    
+    /* Увеличиваем область захвата для всех слайдеров */
+    .slider::-webkit-slider-thumb {
+        width: 20px !important;
+        height: 20px !important;
+        cursor: pointer;
+    }
+    
+    .slider::-moz-range-thumb {
+        width: 32px !important;
+        height: 32px !important;
+        cursor: pointer;
+    }
+    
+    /* Убираем выделение при касании */
     .scale-card {
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    /* УБИРАЕМ position: fixed и overflow: hidden у body */
+    body {
+        overscroll-behavior: contain;
+        padding: 10px;
+        /* Убрали position: fixed и overflow: hidden */
+    }
+    
+    /* Контейнер с прокруткой - ТОЛЬКО ОДИН ПОЛЗУНОК */
+    .container {
+        max-height: calc(100vh - 20px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         padding: 15px;
     }
     
-    .scale-title {
-        width: 100%;
-        margin-bottom: 10px;
-        min-height: auto;
-        text-align: left;
+    /* Контейнер со слайдерами БЕЗ прокрутки */
+    .scales-container {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+        padding: 10px 0;
+        /* Убрали overflow-y: auto */
     }
     
+    /* Корректировка высоты слайдеров */
     .vertical-scale {
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        height: auto;
-        justify-content: space-between;
-        gap: 20px;
+        height: 150px;
     }
-    
-    .slider-wrapper {
-        width: calc(50% - 10px);
-        height: auto;
-        position: relative;
-    }
-    
-    .slider-wrapper::before {
-        display: none;
-    }
-    
-    .slider-wrapper::after {
-        content: attr(data-label);
-        position: absolute;
-        bottom: -25px;
-        left: 50%;
-        transform: translateX(-50%);
-        font-size: 11px;
-        color: #666;
-        white-space: nowrap;
-        font-weight: bold;
-    }
-    
-    .now-slider-wrapper::after {
-        content: "Сейчас";
-        color: #2196F3;
-    }
-    
-    .ideal-slider-wrapper::after {
-        content: "Идеал";
-        color: #FF1493;
+}
+
+/* Для телефонов в альбомной ориентации (маленькая высота) */
+@media (orientation: landscape) and (max-width: 1024px) and (max-height: 500px) {
+    .vertical-scale {
+        height: 100px;
     }
     
     .slider {
-        position: relative;
-        transform: none;
-        width: 100%;
-        height: 40px;
-        background: transparent;
+        width: 140px;
+    }
+    
+    .scale-title {
+        font-size: 11px;
+        min-height: 30px;
+        margin-bottom: 10px;
+    }
+    
+    .scale-card {
+        padding: 10px 5px;
     }
     
     .slider::-webkit-slider-thumb {
-        width: 28px;
-        height: 28px;
+        width: 20px !important;
+        height: 20px !important;
+    }
+}
+
+/* Для планшетов в альбомной ориентации */
+@media (orientation: landscape) and (min-width: 769px) and (max-width: 1024px) {
+    .scales-container {
+        grid-template-columns: repeat(4, 1fr);
+    }
+    
+    .vertical-scale {
+        height: 180px;
+    }
+    
+    .slider {
+        width: 200px;
+    }
+}
+
+/* Для узких экранов в альбомной ориентации */
+@media (orientation: landscape) and (max-width: 700px) {
+    .scales-container {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+/* ============ МЕТКА 50% ДЛЯ МАЛЕНЬКИХ УСТРОЙСТВ ============ */
+@media (max-width: 450px) {
+    /* Возвращаем горизонтальную черточку как на десктопе */
+    .slider-wrapper::before {
+        content: "";
+        position: absolute;
+        right: -1px;  /* Справа, как на десктопе */
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;    /* Длина черточки */
+        height: 1px;   /* Толщина */
+        background: #999;
+        opacity: 0.7;
+        pointer-events: none;
+        z-index: 5;
+        display: block !important; /* Принудительно показываем */
+    }
+    
+    /* Убираем вертикальную метку, если она была */
+    .slider-wrapper::after {
+        display: none;
+    }
+}
+
+/* Для совсем крошечных устройств */
+@media (max-width: 350px) {
+    .slider-wrapper::before {
+        width: 5px;  /* Чуть короче */
+        right: -2px; /* Немного смещаем */
     }
 }
