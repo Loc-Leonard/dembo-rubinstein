@@ -11,6 +11,7 @@ class DemboRubinsteinSurvey {
         ];
 
         this.responses = {};
+        this.activeSlider = null;
         this.init();
     }
 
@@ -86,41 +87,86 @@ class DemboRubinsteinSurvey {
     }
 
     enhanceMobileExperience() {
-        // Проверяем, что это мобильное устройство
-        if ('ontouchstart' in window) {
-            const sliders = document.querySelectorAll('.slider');
+    // Проверяем, что это touch-устройство
+    if ('ontouchstart' in window) {
+        const sliders = document.querySelectorAll('.slider');
+        
+        sliders.forEach(slider => {
+            // Отключаем стандартное поведение touch на слайдерах
+            slider.style.touchAction = 'none';
             
-            sliders.forEach(slider => {
-                // Предотвращаем прокрутку при касании слайдера
-                slider.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                }, { passive: false });
-                
-                slider.addEventListener('touchmove', (e) => {
-                    e.preventDefault();
-                    const touch = e.touches[0];
-                    const rect = slider.getBoundingClientRect();
-                    
-                    // Для мобильных устройств с горизонтальными слайдерами
-                    if (window.innerWidth <= 768) {
-                        const percent = (touch.clientX - rect.left) / rect.width;
-                        const value = Math.min(100, Math.max(0, Math.round(percent * 100)));
-                        slider.value = value;
-                        
-                        const event = new Event('input', { bubbles: true });
-                        slider.dispatchEvent(event);
-                    }
-                }, { passive: false });
+            // Начало касания
+            slider.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                this.activeSlider = slider;
+                this.updateSliderFromTouch(e.touches[0], slider);
+            }, { passive: false });
+
+            // Движение пальцем
+            slider.addEventListener('touchmove', (e) => {
+                e.preventDefault();
+                if (this.activeSlider === slider) {
+                    this.updateSliderFromTouch(e.touches[0], slider);
+                }
+            }, { passive: false });
+
+            // Окончание касания
+            slider.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                if (this.activeSlider === slider) {
+                    this.activeSlider = null;
+                }
             });
 
-            // Увеличиваем область касания для кнопок
-            const buttons = document.querySelectorAll('.btn');
-            buttons.forEach(btn => {
-                btn.style.padding = '15px 30px';
-                btn.style.minHeight = '50px'; // Минимальная высота для удобного касания
+            slider.addEventListener('touchcancel', (e) => {
+                e.preventDefault();
+                if (this.activeSlider === slider) {
+                    this.activeSlider = null;
+                }
             });
-        }
+        });
+
+        // Увеличиваем область касания для кнопок
+        const buttons = document.querySelectorAll('.btn');
+        buttons.forEach(btn => {
+            btn.style.padding = '15px 30px';
+            btn.style.minHeight = '50px';
+        });
     }
+}
+
+updateSliderFromTouch(touch, slider) {
+    const rect = slider.getBoundingClientRect();
+    const centerY = rect.top + rect.height / 2;
+    const deltaY = touch.clientY - centerY;
+    const rangeHeight = rect.height;
+    
+    // Проверяем, как работает слайдер на этом устройстве
+    // Если при движении вниз значение уменьшается - инвертируем
+    let percent;
+    
+    // Тестовое определение направления
+    if (slider.dataset.direction === 'inverted') {
+        percent = 50 - (deltaY / (rangeHeight / 2)) * 50;
+    } else {
+        percent = 50 + (deltaY / (rangeHeight / 2)) * 50;
+    }
+    
+    percent = Math.min(100, Math.max(0, Math.round(percent)));
+    
+    // Для отладки - можно посмотреть в консоли
+    console.log('deltaY:', deltaY, 'percent:', percent);
+    
+    slider.value = percent;
+    this.attachGradient(slider);
+    
+    const scaleId = slider.dataset.scale;
+    const type = slider.dataset.type;
+    this.responses[`${scaleId}_${type}`] = percent;
+    
+    this.checkCompletion();
+    slider.dispatchEvent(new Event('input', { bubbles: true }));
+}
 
     handleSliderChange(event) {
         const slider = event.target;
