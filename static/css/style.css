@@ -109,7 +109,8 @@ h2 {
     cursor: pointer;
     position: absolute;
     background: linear-gradient(to right, #2196F3 0%, #ccc 0%);
-    touch-action: pan-y pinch-zoom;
+    /* позволяем браузеру обрабатывать жесты, но фокус на взаимодействие */
+    touch-action: none;
 }
 
 /* Chrome / Safari / Edge Thumb */
@@ -212,7 +213,6 @@ h2 {
     font-size: 14px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     overflow-x: auto;
-    /* display: block; */
 }
 
 .results-table th {
@@ -324,7 +324,6 @@ h2 {
     
     .slider {
         width: 220px;
-        touch-action: none; /* На мобильных полностью контролируем касания */
     }
     
     .btn {
@@ -357,6 +356,7 @@ h2 {
         padding: 8px 5px;
         white-space: normal;
     }
+    
     .table-wrapper {
         overflow: auto;
         -webkit-overflow-scrolling: touch;
@@ -422,7 +422,6 @@ h2 {
         margin-bottom: 10px;
     }
     
-    /* Для очень маленьких экранов делаем таблицу прокручиваемой */
     .results-table {
         display: block;
         overflow-x: auto;
@@ -436,7 +435,6 @@ h2 {
         padding: 6px 3px;
     }
 }
-
 
 /* Поддержка сенсорных экранов */
 @media (hover: none) and (pointer: coarse) {
@@ -470,40 +468,11 @@ h2 {
 }
 
 @media (orientation: landscape) and (max-width: 1024px) {
-    /* Запрещаем прокрутку страницы при касании слайдеров */
-    .slider {
-        touch-action: none !important;
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        user-select: none;
-    }
-    
-    /* Увеличиваем область захвата для всех слайдеров */
-    .slider::-webkit-slider-thumb {
-        width: 20px !important;
-        height: 20px !important;
-        cursor: pointer;
-    }
-    
-    .slider::-moz-range-thumb {
-        width: 32px !important;
-        height: 32px !important;
-        cursor: pointer;
-    }
-    
-    /* Убираем выделение при касании */
-    .scale-card {
-        -webkit-tap-highlight-color: transparent;
-    }
-    
-    /* УБИРАЕМ position: fixed и overflow: hidden у body */
     body {
         overscroll-behavior: contain;
         padding: 10px;
-        /* Убрали position: fixed и overflow: hidden */
     }
     
-    /* Контейнер с прокруткой - ТОЛЬКО ОДИН ПОЛЗУНОК */
     .container {
         max-height: calc(100vh - 20px);
         overflow-y: auto;
@@ -511,16 +480,13 @@ h2 {
         padding: 15px;
     }
     
-    /* Контейнер со слайдерами БЕЗ прокрутки */
     .scales-container {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 15px;
         padding: 10px 0;
-        /* Убрали overflow-y: auto */
     }
     
-    /* Корректировка высоты слайдеров */
     .vertical-scale {
         height: 150px;
     }
@@ -573,25 +539,24 @@ h2 {
         grid-template-columns: repeat(2, 1fr);
     }
 }
-/* ============ МЕТКА 50% ДЛЯ МАЛЕНЬКИХ УСТРОЙСТВ ============ */
+
+/* МЕТКА 50% ДЛЯ МАЛЕНЬКИХ УСТРОЙСТВ */
 @media (max-width: 450px) {
-    /* Возвращаем горизонтальную черточку как на десктопе */
     .slider-wrapper::before {
         content: "";
         position: absolute;
-        right: -1px;  /* Справа, как на десктопе */
+        right: -1px;
         top: 50%;
         transform: translateY(-50%);
-        width: 6px;    /* Длина черточки */
-        height: 1px;   /* Толщина */
+        width: 6px;
+        height: 1px;
         background: #999;
         opacity: 0.7;
         pointer-events: none;
         z-index: 5;
-        display: block !important; /* Принудительно показываем */
+        display: block !important;
     }
     
-    /* Убираем вертикальную метку, если она была */
     .slider-wrapper::after {
         display: none;
     }
@@ -600,7 +565,7 @@ h2 {
 /* Для совсем крошечных устройств */
 @media (max-width: 350px) {
     .slider-wrapper::before {
-        width: 5px;  /* Чуть короче */
-        right: -2px; /* Немного смещаем */
+        width: 5px;
+        right: -2px;
     }
 }
