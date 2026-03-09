@@ -19,7 +19,7 @@ class DemboRubinsteinSurvey {
         this.renderScales();
         this.attachEventListeners();
         this.resetResponses();
-        this.enhanceMobileExperience(); // Добавляем мобильные улучшения в класс
+        /*this.enhanceMobileExperience();*/
     }
 
     resetResponses() {
@@ -60,7 +60,6 @@ class DemboRubinsteinSurvey {
             container.appendChild(card);
         });
 
-        // Применяем динамический градиент для всех слайдеров
         const sliders = document.querySelectorAll('.slider');
         sliders.forEach(slider => {
             this.attachGradient(slider);
@@ -86,87 +85,57 @@ class DemboRubinsteinSurvey {
         if (submitBtn) submitBtn.addEventListener('click', () => this.showResults());
     }
 
-    enhanceMobileExperience() {
-    // Проверяем, что это touch-устройство
-    if ('ontouchstart' in window) {
-        const sliders = document.querySelectorAll('.slider');
-        
-        sliders.forEach(slider => {
-            // Отключаем стандартное поведение touch на слайдерах
-            slider.style.touchAction = 'none';
-            
-            // Начало касания
-            slider.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                this.activeSlider = slider;
-                this.updateSliderFromTouch(e.touches[0], slider);
-            }, { passive: false });
+// enhanceMobileExperience() {
+//     if (!('ontouchstart' in window)) return;
 
-            // Движение пальцем
-            slider.addEventListener('touchmove', (e) => {
-                e.preventDefault();
-                if (this.activeSlider === slider) {
-                    this.updateSliderFromTouch(e.touches[0], slider);
-                }
-            }, { passive: false });
+//     // Ждём, пока DOM точно отрисует все слайдеры
+//     setTimeout(() => {
+//         const wrappers = document.querySelectorAll('.slider-wrapper');
+//         if (!wrappers.length) return;
 
-            // Окончание касания
-            slider.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                if (this.activeSlider === slider) {
-                    this.activeSlider = null;
-                }
-            });
+//         let active = false;
 
-            slider.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                if (this.activeSlider === slider) {
-                    this.activeSlider = null;
-                }
-            });
-        });
+//         const disableScroll = () => {
+//             document.body.dataset.prevOverflow = document.body.style.overflow || '';
+//             document.body.style.overflow = 'hidden';
+//         };
 
-        // Увеличиваем область касания для кнопок
-        const buttons = document.querySelectorAll('.btn');
-        buttons.forEach(btn => {
-            btn.style.padding = '15px 30px';
-            btn.style.minHeight = '50px';
-        });
-    }
-}
+//         const enableScroll = () => {
+//             document.body.style.overflow = document.body.dataset.prevOverflow || '';
+//         };
 
-updateSliderFromTouch(touch, slider) {
-    const rect = slider.getBoundingClientRect();
-    const centerY = rect.top + rect.height / 2;
-    const deltaY = touch.clientY - centerY;
-    const rangeHeight = rect.height;
-    
-    // Проверяем, как работает слайдер на этом устройстве
-    // Если при движении вниз значение уменьшается - инвертируем
-    let percent;
-    
-    // Тестовое определение направления
-    if (slider.dataset.direction === 'inverted') {
-        percent = 50 - (deltaY / (rangeHeight / 2)) * 50;
-    } else {
-        percent = 50 + (deltaY / (rangeHeight / 2)) * 50;
-    }
-    
-    percent = Math.min(100, Math.max(0, Math.round(percent)));
-    
-    // Для отладки - можно посмотреть в консоли
-    console.log('deltaY:', deltaY, 'percent:', percent);
-    
-    slider.value = percent;
-    this.attachGradient(slider);
-    
-    const scaleId = slider.dataset.scale;
-    const type = slider.dataset.type;
-    this.responses[`${scaleId}_${type}`] = percent;
-    
-    this.checkCompletion();
-    slider.dispatchEvent(new Event('input', { bubbles: true }));
-}
+//         wrappers.forEach(wrapper => {
+//             wrapper.addEventListener('touchstart', (e) => {
+//                 active = true;
+//                 disableScroll();
+//                 // не даём событию уйти в скролл, но внутри wrapper браузер сам обработает drag по input
+//                 e.preventDefault();
+//             }, { passive: false });
+
+//             wrapper.addEventListener('touchmove', (e) => {
+//                 if (!active) return;
+//                 e.preventDefault(); // блокируем прокрутку страницы
+//             }, { passive: false });
+
+//             const endTouch = (e) => {
+//                 if (!active) return;
+//                 active = false;
+//                 enableScroll();
+//                 e.preventDefault();
+//             };
+
+//             wrapper.addEventListener('touchend', endTouch, { passive: false });
+//             wrapper.addEventListener('touchcancel', endTouch, { passive: false });
+//         });
+
+//         const buttons = document.querySelectorAll('.btn');
+//         buttons.forEach(btn => {
+//             btn.style.padding = '15px 30px';
+//             btn.style.minHeight = '50px';
+//         });
+//     }, 0);
+// }
+
 
     handleSliderChange(event) {
         const slider = event.target;
@@ -189,8 +158,10 @@ updateSliderFromTouch(touch, slider) {
                 if (validationMsg) validationMsg.textContent = '';
             } else {
                 submitBtn.disabled = true;
-                if (validationMsg) validationMsg.textContent =
-                    `Передвиньте все ползунки (осталось ${expectedCount - completedCount})`;
+                if (validationMsg) {
+                    validationMsg.textContent =
+                        `Передвиньте все ползунки (осталось ${expectedCount - completedCount})`;
+                }
             }
         }
     }
@@ -200,7 +171,7 @@ updateSliderFromTouch(touch, slider) {
         this.scales.forEach(scale => {
             const nowSlider = document.getElementById(`${scale.id}-now`);
             const idealSlider = document.getElementById(`${scale.id}-ideal`);
-            
+
             data[`${scale.id}_now`] = nowSlider ? parseInt(nowSlider.value) : 0;
             data[`${scale.id}_ideal`] = idealSlider ? parseInt(idealSlider.value) : 0;
         });
@@ -243,7 +214,7 @@ updateSliderFromTouch(touch, slider) {
 
         scales.forEach((scale, index) => {
             const diff = scale.ideal - scale.now;
-            
+
             if (index > 0) {
                 sumNow += scale.now;
                 sumIdeal += scale.ideal;
@@ -341,14 +312,13 @@ updateSliderFromTouch(touch, slider) {
 
     renderResults(results) {
         const container = document.querySelector('.container');
-        
+
         document.getElementById('survey-form').style.display = 'none';
-        
+
         const resultsDiv = document.createElement('div');
         resultsDiv.id = 'results-view';
         resultsDiv.innerHTML = `
             <h2>Результаты диагностики</h2>
-            
             <table class="results-table">
                 <thead>
                     <tr>
@@ -438,9 +408,9 @@ updateSliderFromTouch(touch, slider) {
                 <h2>✅ Результаты сохранены!</h2>
                 <p>Скопируйте ссылку и отправьте проверяющему:</p>
                 <div style="margin: 20px 0;">
-                    <input id="share-link" value="${window.location.origin}${shareUrl}" 
+                    <input id="share-link" value="${window.location.origin}${shareUrl}"
                            readonly style="width: 70%; padding: 10px; font-size: 14px;">
-                    <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('share-link').value)" 
+                    <button class="btn" onclick="navigator.clipboard.writeText(document.getElementById('share-link').value)"
                             style="width: 25%; padding: 10px; margin-left: 5px;">
                         📋 Копировать
                     </button>
@@ -457,7 +427,6 @@ updateSliderFromTouch(touch, slider) {
     }
 }
 
-// Единая инициализация
 document.addEventListener('DOMContentLoaded', () => {
     new DemboRubinsteinSurvey();
 });
