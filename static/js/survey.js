@@ -1,15 +1,15 @@
 class DemboRubinsteinSurvey {
     constructor() {
         this.scales = [
-            { id: 'health', title: 'Здоровье', description: 'тренировочная шкала' },
-            { id: 'mind', title: 'Ум, способности', description: 'интеллектуальные возможности' },
-            { id: 'character', title: 'Характер', description: 'особенности личности' },
-            { id: 'authority', title: 'Авторитет', description: 'признание в коллективе' },
-            { id: 'hands', title: 'Умелые руки', description: 'практические навыки' },
-            { id: 'appearance', title: 'Внешность', description: 'оценка привлекательности' },
-            { id: 'confidence', title: 'Уверенность в себе', description: 'вера в свои силы' }
-        ];
-
+    { id: 'health',      title: 'Здоровье',                     description: 'общая оценка физического самочувствия' },
+    { id: 'abilities',   title: 'Способности',                  description: 'интеллектуальные и другие способности' },
+    { id: 'character',   title: 'Характер',                     description: 'личностные особенности' },
+    { id: 'happiness',   title: 'Счастье',                      description: 'общий уровень удовлетворённости жизнью' },
+    { id: 'selfesteem',  title: 'Самооценка',                   description: 'как вы в целом оцениваете себя' },
+    { id: 'appearance',  title: 'Внешность',                    description: 'оценка своей привлекательности' },
+    { id: 'confidence',  title: 'Уверенность в себе',           description: 'вера в свои силы' },
+    { id: 'relations',   title: 'Отношения с окружающими',      description: 'как складываются отношения с людьми' }
+];
         this.responses = {};
         this.activeSlider = null;
         this.init();

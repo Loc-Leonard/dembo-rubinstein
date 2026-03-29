@@ -77,18 +77,20 @@ func initDB() error {
 type SurveyResponse struct {
 	HealthNow       int `json:"health_now"`
 	HealthIdeal     int `json:"health_ideal"`
-	MindNow         int `json:"mind_now"`
-	MindIdeal       int `json:"mind_ideal"`
+	AbilitiesNow    int `json:"abilities_now"`
+	AbilitiesIdeal  int `json:"abilities_ideal"`
 	CharacterNow    int `json:"character_now"`
 	CharacterIdeal  int `json:"character_ideal"`
-	AuthorityNow    int `json:"authority_now"`
-	AuthorityIdeal  int `json:"authority_ideal"`
-	HandsNow        int `json:"hands_now"`
-	HandsIdeal      int `json:"hands_ideal"`
+	HappinessNow    int `json:"happiness_now"`
+	HappinessIdeal  int `json:"happiness_ideal"`
+	SelfesteemNow   int `json:"selfesteem_now"`
+	SelfesteemIdeal int `json:"selfesteem_ideal"`
 	AppearanceNow   int `json:"appearance_now"`
 	AppearanceIdeal int `json:"appearance_ideal"`
 	ConfidenceNow   int `json:"confidence_now"`
 	ConfidenceIdeal int `json:"confidence_ideal"`
+	RelationsNow    int `json:"relations_now"`
+	RelationsIdeal  int `json:"relations_ideal"`
 }
 
 type Scale struct {
@@ -181,20 +183,29 @@ func buildStoredResult(id string, r SurveyResponse) StoredResult {
 		ID:        id,
 		CreatedAt: time.Now(),
 		Scales: []Scale{
-			{Key: "health_now", Title: "Здоровье (текущее)", Description: "Как респондент оценивает своё здоровье сейчас", Value: r.HealthNow},
-			{Key: "health_ideal", Title: "Здоровье (идеал)", Description: "Какое здоровье респондент хотел бы иметь", Value: r.HealthIdeal},
-			{Key: "mind_now", Title: "Ум/способности (текущее)", Description: "Самооценка своих умственных способностей сейчас", Value: r.MindNow},
-			{Key: "mind_ideal", Title: "Ум/способности (идеал)", Description: "Желаемый уровень умственных способностей", Value: r.MindIdeal},
-			{Key: "character_now", Title: "Характер (текущее)", Description: "Как респондент оценивает свой характер сейчас", Value: r.CharacterNow},
-			{Key: "character_ideal", Title: "Характер (идеал)", Description: "Желаемый характер", Value: r.CharacterIdeal},
-			{Key: "authority_now", Title: "Авторитет у сверстников (текущее)", Description: "Какой авторитет, по мнению респондента, у него есть сейчас", Value: r.AuthorityNow},
-			{Key: "authority_ideal", Title: "Авторитет у сверстников (идеал)", Description: "Какой авторитет респондент хотел бы иметь", Value: r.AuthorityIdeal},
-			{Key: "hands_now", Title: "Умелые руки (текущее)", Description: "Оценка своих практических навыков сейчас", Value: r.HandsNow},
-			{Key: "hands_ideal", Title: "Умелые руки (идеал)", Description: "Желаемый уровень практических навыков", Value: r.HandsIdeal},
-			{Key: "appearance_now", Title: "Внешность (текущее)", Description: "Оценка своей внешности сейчас", Value: r.AppearanceNow},
-			{Key: "appearance_ideal", Title: "Внешность (идеал)", Description: "Желаемая внешность", Value: r.AppearanceIdeal},
-			{Key: "confidence_now", Title: "Уверенность в себе (текущее)", Description: "Как респондент оценивает свою уверенность сейчас", Value: r.ConfidenceNow},
-			{Key: "confidence_ideal", Title: "Уверенность в себе (идеал)", Description: "Желаемый уровень уверенности", Value: r.ConfidenceIdeal},
+			{Key: "health_now", Title: "Здоровье (текущее)", Description: "Как вы оцениваете своё здоровье сейчас", Value: r.HealthNow},
+			{Key: "health_ideal", Title: "Здоровье (идеал)", Description: "Какое здоровье вы хотели бы иметь", Value: r.HealthIdeal},
+
+			{Key: "abilities_now", Title: "Способности (текущее)", Description: "Как вы оцениваете свои способности сейчас", Value: r.AbilitiesNow},
+			{Key: "abilities_ideal", Title: "Способности (идеал)", Description: "Желаемый уровень ваших способностей", Value: r.AbilitiesIdeal},
+
+			{Key: "character_now", Title: "Характер (текущее)", Description: "Как вы оцениваете свой характер сейчас", Value: r.CharacterNow},
+			{Key: "character_ideal", Title: "Характер (идеал)", Description: "Какой характер вы хотели бы иметь", Value: r.CharacterIdeal},
+
+			{Key: "happiness_now", Title: "Счастье (текущее)", Description: "Насколько вы сейчас чувствуете себя счастливым", Value: r.HappinessNow},
+			{Key: "happiness_ideal", Title: "Счастье (идеал)", Description: "Насколько счастливым вы хотели бы себя чувствовать", Value: r.HappinessIdeal},
+
+			{Key: "selfesteem_now", Title: "Самооценка (текущее)", Description: "Как вы оцениваете себя в целом сейчас", Value: r.SelfesteemNow},
+			{Key: "selfesteem_ideal", Title: "Самооценка (идеал)", Description: "Какой уровень самооценки вы хотели бы иметь", Value: r.SelfesteemIdeal},
+
+			{Key: "appearance_now", Title: "Внешность (текущее)", Description: "Как вы оцениваете свою внешность сейчас", Value: r.AppearanceNow},
+			{Key: "appearance_ideal", Title: "Внешность (идеал)", Description: "Желаемая оценка своей внешности", Value: r.AppearanceIdeal},
+
+			{Key: "confidence_now", Title: "Уверенность в себе (текущее)", Description: "Насколько уверенным в себе вы чувствуете себя сейчас", Value: r.ConfidenceNow},
+			{Key: "confidence_ideal", Title: "Уверенность в себе (идеал)", Description: "Желаемый уровень уверенности в себе", Value: r.ConfidenceIdeal},
+
+			{Key: "relations_now", Title: "Отношения с окружающими (текущее)", Description: "Как вы оцениваете свои отношения с окружающими сейчас", Value: r.RelationsNow},
+			{Key: "relations_ideal", Title: "Отношения с окружающими (идеал)", Description: "Каких отношений с окружающими вы хотите", Value: r.RelationsIdeal},
 		},
 	}
 }
@@ -208,30 +219,41 @@ func storedToSurvey(stored StoredResult) SurveyResponse {
 			r.HealthNow = s.Value
 		case "health_ideal":
 			r.HealthIdeal = s.Value
-		case "mind_now":
-			r.MindNow = s.Value
-		case "mind_ideal":
-			r.MindIdeal = s.Value
+
+		case "abilities_now":
+			r.AbilitiesNow = s.Value
+		case "abilities_ideal":
+			r.AbilitiesIdeal = s.Value
+
 		case "character_now":
 			r.CharacterNow = s.Value
 		case "character_ideal":
 			r.CharacterIdeal = s.Value
-		case "authority_now":
-			r.AuthorityNow = s.Value
-		case "authority_ideal":
-			r.AuthorityIdeal = s.Value
-		case "hands_now":
-			r.HandsNow = s.Value
-		case "hands_ideal":
-			r.HandsIdeal = s.Value
+
+		case "happiness_now":
+			r.HappinessNow = s.Value
+		case "happiness_ideal":
+			r.HappinessIdeal = s.Value
+
+		case "selfesteem_now":
+			r.SelfesteemNow = s.Value
+		case "selfesteem_ideal":
+			r.SelfesteemIdeal = s.Value
+
 		case "appearance_now":
 			r.AppearanceNow = s.Value
 		case "appearance_ideal":
 			r.AppearanceIdeal = s.Value
+
 		case "confidence_now":
 			r.ConfidenceNow = s.Value
 		case "confidence_ideal":
 			r.ConfidenceIdeal = s.Value
+
+		case "relations_now":
+			r.RelationsNow = s.Value
+		case "relations_ideal":
+			r.RelationsIdeal = s.Value
 		}
 	}
 
@@ -245,12 +267,13 @@ func calculateResults(r SurveyResponse) CalculatedResults {
 		ideal int
 	}{
 		{"Здоровье", r.HealthNow, r.HealthIdeal},
-		{"Ум/способности", r.MindNow, r.MindIdeal},
+		{"Способности", r.AbilitiesNow, r.AbilitiesIdeal},
 		{"Характер", r.CharacterNow, r.CharacterIdeal},
-		{"Авторитет у сверстников", r.AuthorityNow, r.AuthorityIdeal},
-		{"Умелые руки", r.HandsNow, r.HandsIdeal},
+		{"Счастье", r.HappinessNow, r.HappinessIdeal},
+		{"Самооценка", r.SelfesteemNow, r.SelfesteemIdeal},
 		{"Внешность", r.AppearanceNow, r.AppearanceIdeal},
 		{"Уверенность в себе", r.ConfidenceNow, r.ConfidenceIdeal},
+		{"Отношения с окружающими", r.RelationsNow, r.RelationsIdeal},
 	}
 
 	results := CalculatedResults{

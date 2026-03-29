@@ -49,30 +49,29 @@ func TestGetAspirationLevel(t *testing.T) {
 }
 
 func TestCalculateResultsBasic(t *testing.T) {
-	// искусственный, но простой кейс:
 	// все "сейчас" = 50, все "идеал" = 70
 	r := SurveyResponse{
 		HealthNow:       50,
 		HealthIdeal:     70,
-		MindNow:         50,
-		MindIdeal:       70,
+		AbilitiesNow:    50,
+		AbilitiesIdeal:  70,
 		CharacterNow:    50,
 		CharacterIdeal:  70,
-		AuthorityNow:    50,
-		AuthorityIdeal:  70,
-		HandsNow:        50,
-		HandsIdeal:      70,
+		HappinessNow:    50,
+		HappinessIdeal:  70,
+		SelfesteemNow:   50,
+		SelfesteemIdeal: 70,
 		AppearanceNow:   50,
 		AppearanceIdeal: 70,
 		ConfidenceNow:   50,
 		ConfidenceIdeal: 70,
+		RelationsNow:    50,
+		RelationsIdeal:  70,
 	}
 
 	res := calculateResults(r)
 
-	// Проверяем средние
-	// У тебя сейчас в calculateResults считаются все 7 шкал, включая здоровье.
-	// sumNow = 7 * 50 = 350, sumIdeal = 7 * 70 = 490, sumDiff = 7 * 20 = 140
+	// 8 шкал, поэтому средние должны быть 50/70/20
 	if res.AvgSelf != 50 {
 		t.Errorf("AvgSelf = %v, want 50", res.AvgSelf)
 	}
@@ -83,20 +82,20 @@ func TestCalculateResultsBasic(t *testing.T) {
 		t.Errorf("AvgDiff = %v, want 20", res.AvgDiff)
 	}
 
-	// Проверим пару шкал в Levels
+	// проверим пару шкал по ключам (lowercase от названия в calculateResults)
 	health, ok := res.Levels["здоровье"]
 	if !ok {
-		t.Fatalf("expected health level in Levels")
+		t.Fatalf("expected 'здоровье' level in Levels")
 	}
 	if health.Now != 50 || health.Ideal != 70 || health.Diff != 20 {
 		t.Errorf("health level = %+v, want Now=50 Ideal=70 Diff=20", health)
 	}
 
-	mind, ok := res.Levels["ум/способности"]
+	happiness, ok := res.Levels["счастье"]
 	if !ok {
-		t.Fatalf("expected mind level in Levels")
+		t.Fatalf("expected 'счастье' level in Levels")
 	}
-	if mind.Now != 50 || mind.Ideal != 70 || mind.Diff != 20 {
-		t.Errorf("mind level = %+v, want Now=50 Ideal=70 Diff=20", mind)
+	if happiness.Now != 50 || happiness.Ideal != 70 || happiness.Diff != 20 {
+		t.Errorf("happiness level = %+v, want Now=50 Ideal=70 Diff=20", happiness)
 	}
 }
